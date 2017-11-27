@@ -23,8 +23,11 @@ def check(**info):
             sig = signature(func)
             bound_arguments = sig.bind(*args, **kwargs)
 
-            for value in bound_arguments.arguments.values():
-                check_func = info.get('check_class')()
+            for name, value in bound_arguments.arguments.items():
+                # 会优先使用check_class，所以check_class只需要一个
+                # 这样就表示对所有的参数使用同一个函数去检查
+                check_func = info.get('check_class', None) or info.get(name)()
+
                 if isinstance(check_func, Check):
                     check_func.check(value)
                 else:
@@ -44,7 +47,7 @@ def main():
         def check(self, parameter):
             print("this is the {}".format(parameter))
 
-    @check(check_class=MyCheck)
+    @check(a=MyCheck)
     def test(a):
         print(a)
 
